@@ -186,6 +186,42 @@ class DFT(object):
 
             profile = profile[1:]
 
+    def check_WinExec(self, emu):
+        profile = emu.emu_profile_output
+
+        while True:
+            offset = profile.find('WinExec')
+            if offset < 0:
+                break
+
+            profile = profile[offset:]
+
+            p = profile.split(';')
+            if not p:
+                profile = profile[1:]
+                continue
+
+            s = p[0].split('"')
+            if len(s) < 2:
+                profile = profile[1:]
+                continue
+
+            url = s[1]
+            if not url.startswith("http"):
+                profile = profile[1:]
+                continue
+
+            if url in log.ThugLogging.shellcode_urls:
+                return
+
+            try:
+                self.window._navigator.fetch(url, redirect_type = "WinExec")
+                log.ThugLogging.shellcode_urls.add(url)
+            except:
+                pass
+
+            profile = profile[1:]
+
     def check_shellcode(self, shellcode):
         try:
             sc = self.build_shellcode(shellcode)
@@ -199,7 +235,8 @@ class DFT(object):
             log.ThugLogging.add_code_snippet(emu.emu_profile_output, 'Assembly', 'Shellcode', method = 'Static Analysis')
             log.warning("[Shellcode Profile]\n\n%s" % (emu.emu_profile_output, ))
             self.check_URLDownloadToFile(emu)
-        
+            self.check_WinExec(emu)
+
         self.check_url(sc, shellcode)
         emu.free()
 
@@ -373,7 +410,7 @@ class DFT(object):
                 pass
 
         if not handler:
-                return
+            return
 
         if getattr(elem, 'name', None) and elem.name in ('body', ) and evt in self.window_on_events:
             setattr(self.window, evt, handler)
@@ -406,6 +443,41 @@ class DFT(object):
         version =  '%s_%s' % ('.'.join(javaplugin), last)
         return log.ThugOpts.Personality.javaUserAgent % (version, )
 
+    def _check_jnlp_param(self, param):
+        name  = param.attrs['name']
+        value = param.attrs['value']
+
+        if name in ('__applet_ssv_validated', ) and value.lower() in ('true', ):
+            log.ThugLogging.log_exploit_event(self.window.url,
+                                              'Java WebStart',
+                                              'Java Security Warning Bypass (CVE-2013-2423)',
+                                              cve = 'CVE-2013-2423')
+
+    def _handle_jnlp(self, data, headers):
+        try:
+            soup = BeautifulSoup.BeautifulSoup(data)
+        except:
+            return
+
+        if soup.find("jnlp") is None:
+            return
+
+        log.ThugLogging.add_behavior_warn(description = '[JNLP Detected]', method = 'Dynamic Analysis')
+
+        for param in soup.find_all('param'):
+            log.ThugLogging.add_behavior_warn(description = '[JNLP] %s' % (param, ), method = 'Dynamic Analysis')
+            self._check_jnlp_param(param)
+
+        jar = soup.find("jar")
+        if jar is None:
+            return
+
+        try:
+            url = jar.attrs['href']
+            response, content = self.window._navigator.fetch(url, headers = headers, redirect_type = "JNLP")
+        except:
+            pass
+
     def do_handle_params(self, object):
         params = dict()
 
@@ -415,7 +487,8 @@ class DFT(object):
                 continue
 
             if name.lower() in ('param', ):
-                params[child.attrs['name'].lower()] = child.attrs['value']
+                if all(p in child.attrs for p in ('name', 'value', )):
+                    params[child.attrs['name'].lower()] = child.attrs['value']
 
             if name.lower() in ('embed', ):
                 self.handle_embed(child)
@@ -454,7 +527,8 @@ class DFT(object):
                 continue
 
             try:
-                self.window._navigator.fetch(value, headers = headers, redirect_type = "params")
+                response, content = self.window._navigator.fetch(value, headers = headers, redirect_type = "params")
+                self._handle_jnlp(content, headers)
             except:
                 pass
 
@@ -755,8 +829,10 @@ class DFT(object):
         #self.run()
 
         doc    = w3c.parseString(content)
-        window = Window.Window(url, doc, personality = log.ThugOpts.useragent)
-        dft    = DFT(window)
+        window = Window.Window(self.window.url, doc, personality = log.ThugOpts.useragent)
+        window.open(url)
+
+        dft = DFT(window)
         dft.run()
 
     def handle_frame(self, frame, redirect_type = 'frame'):
@@ -784,9 +860,13 @@ class DFT(object):
             src = _src
 
         doc    = w3c.parseString(content)
-        window = Window.Window(src, doc, personality = log.ThugOpts.useragent)
-        #window.open(src)
-            
+        window = Window.Window(self.window.url, doc, personality = log.ThugOpts.useragent)
+        window.open(src)
+
+        frame_id = frame.get('id', None)
+        if frame_id:
+            log.ThugLogging.windows[frame_id] = window
+
         dft = DFT(window)
         dft.run()
 
@@ -814,7 +894,11 @@ class DFT(object):
         log.info(style)
 
         cssparser = CSSParser(loglevel = logging.CRITICAL, validate = False)
-        sheet     = cssparser.parseString(style.text)
+
+        try:
+            sheet = cssparser.parseString(style.text)
+        except:
+            return
 
         for rule in sheet:
             if rule.type == rule.FONT_FACE_RULE:
@@ -943,13 +1027,22 @@ class DFT(object):
             self.set_event_listeners(child)
 
         for evt in self.handled_on_events:
-            self.handle_window_event(evt)
+            try:
+                self.handle_window_event(evt)
+            except:
+                log.warning("[handle_window_event] Event %s not properly handled" % (evt, ))
 
         for evt in self.handled_on_events:
-            self.handle_document_event(evt)
+            try:
+                self.handle_document_event(evt)
+            except:
+                log.warning("[handle_document_event] Event %s not properly handled" % (evt, ))
 
         for evt in self.handled_events:
-            self.handle_element_event(evt)
+            try:
+                self.handle_element_event(evt)
+            except:
+                log.warning("[handle_element_event] Event %s not properly handled" % (evt, ))
 
     def run(self):
         with self.context as ctx:

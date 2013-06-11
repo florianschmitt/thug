@@ -114,7 +114,8 @@ class Node(PyV8.JSClass, EventTarget):
     # Modified in DOM Level 2
     @property
     def ownerDocument(self):
-        return self.doc
+        return log.DFT.window.doc
+        #return self.doc
 
     def findChild(self, child):
         #try:
@@ -182,7 +183,7 @@ class Node(PyV8.JSClass, EventTarget):
             raise DOMException(DOMException.NOT_FOUND_ERR)
 
         if self.is_text(newChild):
-            self.tag.insert(index, newChild.data.output_ready())
+            self.tag.insert(index, newChild.data.output_ready(formatter = lambda x: x))
             return newChild
 
         if newChild.nodeType in (Node.DOCUMENT_FRAGMENT_NODE, ):
@@ -224,7 +225,7 @@ class Node(PyV8.JSClass, EventTarget):
             raise DOMException(DOMException.NOT_FOUND_ERR)
 
         if self.is_text(newChild):
-            self.tag.contents[index] = newChild.data.output_ready()
+            self.tag.contents[index] = newChild.data.output_ready(formatter = lambda x: x)
             return oldChild
 
         if newChild.nodeType in (Node.DOCUMENT_FRAGMENT_NODE, ):
@@ -299,7 +300,7 @@ class Node(PyV8.JSClass, EventTarget):
             #self.tag.contents.remove(newChild.tag)
 
         if self.is_text(newChild):
-            self.tag.append(newChild.data.output_ready())
+            self.tag.append(newChild.data.output_ready(formatter = lambda x: x))
             return newChild
 
         if newChild.nodeType in (Node.DOCUMENT_FRAGMENT_NODE, ):

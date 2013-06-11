@@ -41,7 +41,7 @@ Let's start our Thug tour by taking a look at the options it provides.
             -a, --ast-debug         Enable AST debug mode (requires debug mode)
             -t, --threshold         Maximum pages to fetch
             -E, --extensive         Extensive fetch of linked pages
-            -T, --timeout           Timeout in minutes
+            -T, --timeout           Set the analysis timeout (in seconds)
 
             Plugins:
             -A, --adobepdf=         Specify the Adobe Acrobat Reader version (default: 9.1.0)
@@ -71,6 +71,7 @@ Let's start our Thug tour by taking a look at the options it provides.
             win7ie80                Internet Explorer 8.0   (Windows 7)
             win7ie90                Internet Explorer 9.0   (Windows 7)
             win7chrome20            Chrome 20.0.1132.47     (Windows 7)
+            win7firefox3            Firefox 3.6.13          (Windows 7)
             win7safari5             Safari 5.1.7            (Windows 7)
             osx10safari5            Safari 5.1.1            (MacOS X 10.7.2)
             osx10chrome19           Chrome 19.0.1084.54     (MacOS X 10.7.4)

@@ -42,6 +42,9 @@ class Location(PyV8.JSClass):
     def toString(self):
         return self._window.url
 
+    def __repr__(self):
+        return self._window.url
+
     @property
     def parts(self):
         return urlparse.urlparse(self._window.url)
@@ -59,6 +62,7 @@ class Location(PyV8.JSClass):
             if log.ThugOpts.Personality[p]['userAgent'] == self._window._navigator.userAgent:
                 break
 
+        url = self._window.navigator._normalize_url(url)
         log.ThugLogging.log_href_redirect(referer, url)
 
         doc    = w3c.parseString('')
