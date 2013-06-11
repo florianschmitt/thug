@@ -20,6 +20,7 @@ except ImportError:
 import subprocess
 import os
 import shutil
+import logging
 
 
 class Thugd():
@@ -128,7 +129,18 @@ class Thugd():
         if job["proxy"]:
             command.append("-p")
             command.append(job["proxy"])
-
+        if job["useragent"]:
+            command.append("-u")
+            command.append(job["useragent"])
+        if job["adobeReaderVersion"]:
+            command.append("-A")
+            command.append(job["adobeReaderVersion"])
+        if job["flashVersion"]:
+            command.append("-S")
+            command.append(job["flashVersion"])
+        if job["javaVersion"]:
+            command.append("-J")
+            command.append(job["javaVersion"])
         command.append(job["url"])
         print(command)
 
@@ -158,6 +170,7 @@ class Thugd():
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
 if __name__ == "__main__":
+    logging.basicConfig()
     parser = argparse.ArgumentParser(description = 'Receives jobs and starts Thug to process them')
     parser.add_argument('--config', help = 'Configuration file to use', default = "config.ini")
     parser.add_argument('--clear', help = 'Clear the job chain', default = False, action = "store_true")
