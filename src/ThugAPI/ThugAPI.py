@@ -28,7 +28,7 @@ except ImportError:
 
 from DOM.W3C import w3c
 from DOM import Window, DFT, MIMEHandler, SchemeHandler
-from Logging.ThugLogging import ThugLogging
+from Logging.AdvancedThugLogging import AdvancedThugLogging
 
 from .IThugAPI import IThugAPI
 from .ThugOpts import ThugOpts
@@ -149,7 +149,7 @@ class ThugAPI:
         log.ThugOpts.timeout = timeout
 
     def log_init(self, url):
-        log.ThugLogging = ThugLogging(self.thug_version)
+        log.ThugLogging = AdvancedThugLogging(self.thug_version)
         log.ThugLogging.set_basedir(url)
 
     def set_log_dir(self, logdir):
