@@ -33,12 +33,15 @@ class ExtendedMongoDB(MongoDB):
         @description    Description of the exploit
         @cve            CVE number (if available)
         """
-        _data = {"url_id"         : self.url_id,
-                                      "module"      : module,
+        _data = {                     "module"      : module,
                                       "description" : description,
                                       "cve"         : cve,
                                       "data"        : data}
-        self.exploits.insert(_data)
+        item = self.exploits.find_one({"url_id" : self.url_id})
+        if item != None:
+            self.exploits.update({"url_id" : self.url_id}, {"$push" : {"exploits" : _data}})
+        else:
+            self.exploits.insert({"url_id" : self.url_id, "exploits" : [_data]})
 
     def add_behavior_warn(self, description, cve, method):
         _data = {                     "description" : description,
