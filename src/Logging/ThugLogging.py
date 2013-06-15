@@ -19,7 +19,7 @@
 from .BaseLogging import BaseLogging
 from .HPFeeds import HPFeeds
 from .MAEC import MAEC
-from .MongoDB import MongoDB
+from .ExtendedMongoDB import ExtendedMongoDB
 from .JSONLog import JSONLog
 
 import os
@@ -38,7 +38,7 @@ class ThugLogging(BaseLogging):
 
         self.HPFeeds        = HPFeeds()
         self.MAEC           = MAEC(thug_version)
-        self.MongoDB        = MongoDB()
+        self.MongoDB        = ExtendedMongoDB()
         self.JSONLog        = JSONLog(thug_version)
         self.baseDir        = None
         self.windows        = dict()

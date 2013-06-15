@@ -52,12 +52,10 @@ class MongoDB(object):
             log.info('[MongoDB] MongoDB instance not available')
             return
         
-        db           = connection.thug
-        self.urls    = db.urls
-        self.events  = db.events
-        self.samples = db.samples
-        self.exploits = db.exploits
-        self.behavior = db.behavior
+        self.db           = connection.thug
+        self.urls    = self.db.urls
+        self.events  = self.db.events
+        self.samples = self.db.samples
 
         dbfs    = connection.thugfs
         self.fs = gridfs.GridFS(dbfs)
@@ -94,26 +92,3 @@ class MongoDB(object):
         _data['url_id']   = self.url_id
         _data['event_id'] = fp._id
         self.events.insert(_data)
-
-    def log_exploit_event(self, url, module, description, cve = None, data = None):
-        """
-        Log file information for a given url
-
-        @url            Url where this exploit occured
-        @module         Module/ActiveX Control, ... that gets exploited
-        @description    Description of the exploit
-        @cve            CVE number (if available)
-        """
-        _data = {"url_id"         : self.url_id,
-                                      "module"      : module,
-                                      "description" : description,
-                                      "cve"         : cve,
-                                      "data"        : data}
-        self.exploits.insert(_data)
-
-    def add_behavior_warn(self, description, cve, method):
-        _data = {"url_id"         : self.url_id,
-                                      "description" : description,
-                                      "cve"         : cve,
-                                      "method"        : method}
-        self.behavior.insert(_data)
