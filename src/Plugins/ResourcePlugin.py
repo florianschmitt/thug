@@ -23,6 +23,7 @@ log = logging.getLogger("Thug")
 import zope.interface
 from .IPlugin import IPlugin
 
+
 class Handler:
     zope.interface.implements(IPlugin)
     
@@ -33,5 +34,5 @@ class Handler:
         return False
 
     def run(self, thug, log):
-        log.info('registering handler for MIME type application/pdf')
-        log.MIMEHandler["application/pdf"] = self.handleContent
+        log.info('searching for MIME type application/pdf')
+        #with open('')
