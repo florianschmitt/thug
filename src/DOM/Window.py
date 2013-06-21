@@ -27,8 +27,9 @@ import pefile
 import numbers
 import datetime
 import collections
+import new
 import bs4 as BeautifulSoup
-from . import jsbeautifier
+import jsbeautifier
 from .W3C import *
 from .Navigator import Navigator
 from .Location import Location
@@ -162,8 +163,8 @@ class Window(PyV8.JSClass):
                     break
 
             if _method is None:
-                #_method = new.instancemethod(symbol, self, Window)
-                _method = symbol.__get__(self, Window)
+                _method = new.instancemethod(symbol, self, Window)
+                #_method = symbol.__get__(self, Window)
 
             setattr(self, name, _method)
             self.context.locals[name] = _method
@@ -1009,7 +1010,7 @@ class Window(PyV8.JSClass):
             html = ''
             kwds = {}
        
-        dom = BeautifulSoup.BeautifulSoup(html, "html5lib")
+        dom = BeautifulSoup.BeautifulSoup(html, "html.parser")
         
         for spec in specs.split(','):
             spec = [s.strip() for s in spec.split('=')]

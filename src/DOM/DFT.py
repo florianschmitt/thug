@@ -26,8 +26,8 @@ import PyV8
 import chardet
 import traceback
 import bs4 as BeautifulSoup
+import jsbeautifier
 from cssutils.parse import CSSParser
-from . import jsbeautifier
 
 try:
     from . import Window
@@ -443,6 +443,13 @@ class DFT(object):
         version =  '%s_%s' % ('.'.join(javaplugin), last)
         return log.ThugOpts.Personality.javaUserAgent % (version, )
 
+    @property
+    def javaWebStartUserAgent(self):
+        javaplugin = log.ThugVulnModules._javaplugin.split('.')
+        last = javaplugin.pop()
+        version =  '%s_%s' % ('.'.join(javaplugin), last)
+        return "JNLP/6.0 javaws/%s (b04) Java/%s" % (version, version, )
+
     def _check_jnlp_param(self, param):
         name  = param.attrs['name']
         value = param.attrs['value']
@@ -474,6 +481,7 @@ class DFT(object):
 
         try:
             url = jar.attrs['href']
+            headers['User-Agent'] = self.javaWebStartUserAgent
             response, content = self.window._navigator.fetch(url, headers = headers, redirect_type = "JNLP")
         except:
             pass
@@ -773,7 +781,7 @@ class DFT(object):
             pass
 
     def handle_meta(self, meta):
-        log.warning(meta)
+        log.info(meta)
 
         name = meta.get('name', None)
         if name and name.lower() in ('generator', ):
@@ -905,6 +913,8 @@ class DFT(object):
                 self.do_handle_font_face_rule(rule)
 
     def handle_a(self, anchor):
+        log.info(anchor)
+
         if log.ThugOpts.extensive:
             log.warning(anchor)
 
@@ -923,7 +933,7 @@ class DFT(object):
         self.anchors.append(anchor)
 
     def handle_link(self, link):
-        log.warning(link)
+        log.info(link)
 
         href = link.get('href', None)
         if not href:
