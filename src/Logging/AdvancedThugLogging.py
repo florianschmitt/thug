@@ -19,13 +19,9 @@
 from .ThugLogging import ThugLogging
 from .MongoDB import MongoDB
 
-import os
-import copy
-import errno
-import hashlib
-import datetime
 import logging
 log = logging.getLogger("Thug")
+
 
 class AdvancedThugLogging(ThugLogging):
     def __init__(self, thug_version):

@@ -34,5 +34,5 @@ class Handler:
         return False
 
     def run(self, thug, log):
-        log.info('searching for MIME type application/pdf')
+        log.warning('searching for MIME type application/pdf')
         #with open('')
