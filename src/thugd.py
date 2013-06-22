@@ -135,12 +135,18 @@ class Thugd():
         if job["adobeReaderVersion"]:
             command.append("-A")
             command.append(job["adobeReaderVersion"])
+        else:
+            command.append("-P")
         if job["flashVersion"]:
             command.append("-S")
             command.append(job["flashVersion"])
+        else:
+            command.append("-R")
         if job["javaVersion"]:
             command.append("-J")
             command.append(job["javaVersion"])
+        else:
+            command.append("-K")
         command.append(job["url"])
         print(command)
 

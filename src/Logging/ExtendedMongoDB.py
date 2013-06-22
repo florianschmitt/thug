@@ -17,6 +17,9 @@
 # MA  02111-1307  USA
 
 from .MongoDB import MongoDB
+import logging
+
+log = logging.getLogger("Thug")
 
 class ExtendedMongoDB(MongoDB):
     def __init__(self):
@@ -54,7 +57,20 @@ class ExtendedMongoDB(MongoDB):
         else:
             self.behavior.insert({"url_id" : self.url_id, "behavior" : [_data]})
 
+    def check_plugin(self, plugin):
+        if log.ThugVulnModules.shockwave_flash_disabled:
+            if plugin['name'].find("Shockwave Flash") is not -1:
+                return True
+        if log.ThugVulnModules.acropdf_disabled:
+            if plugin['name'].find("Adobe Acrobat") is not -1:
+                return True
+        if log.ThugVulnModules.javaplugin_disabled:
+            if plugin['name'].find("Java") is not -1:
+                return True
+        return False
+
     def set_profile(self, personality, plugins):
+        plugins = [x for x in plugins if not self.check_plugin(x)]
         item = self.profiles.find_one({"url_id" : self.url_id})
         if item is not None:
             self.profiles.update(item, {"personality" : personality, "plugins" : plugins})
