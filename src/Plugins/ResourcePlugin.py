@@ -21,18 +21,26 @@ import logging
 log = logging.getLogger("Thug")
 
 import zope.interface
+import os
+import subprocess
 from .IPlugin import IPlugin
-
 
 class Handler:
     zope.interface.implements(IPlugin)
+
+    scrutinizerPath = '/home/zack/projects/PDFScrutinizer/run.sh'
     
-    def handleContent(self, data):
-        log.warning("data length:" + str(len(data)))
-        with open('/home/zack/tmp.pdf', 'wb') as fd:
-            fd.write(data)
-        return False
+    def startProcess(self, path, urlid):
+        params = [self.scrutinizerPath, '-pdf', path, '-mongo', str(urlid)]
+        log.warn("starting scrutinizer process " + str(params))
+        p = subprocess.Popen(params, shell=False, cwd='/home/zack/projects/PDFScrutinizer',)
+        log.warn(p.stdout)
 
     def run(self, thug, log):
-        log.warning('searching for MIME type application/pdf')
-        #with open('')
+        log.warn('searching for content type application/pdf')
+        path = os.getcwd()+'/..'+log.ThugLogging.baseDir[2:]+'/application/pdf'
+        if os.path.exists(path):
+            for x in os.listdir(path):
+                self.startProcess(path+'/'+x, log.ThugLogging.MongoDB.url_id)
+        else:
+            log.warn("nothing found")
