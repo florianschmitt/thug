@@ -23,6 +23,7 @@ class ExtendedMongoDB(MongoDB):
         MongoDB.__init__(self)
         self.exploits = self.db.exploits
         self.behavior = self.db.behavior
+        self.profiles = self.db.profiles
 
     def log_exploit_event(self, url, module, description, cve = None, data = None):
         """
@@ -38,7 +39,7 @@ class ExtendedMongoDB(MongoDB):
                                       "cve"         : cve,
                                       "data"        : data}
         item = self.exploits.find_one({"url_id" : self.url_id})
-        if item != None:
+        if item is not None:
             self.exploits.update({"url_id" : self.url_id}, {"$push" : {"exploits" : _data}})
         else:
             self.exploits.insert({"url_id" : self.url_id, "exploits" : [_data]})
@@ -48,7 +49,14 @@ class ExtendedMongoDB(MongoDB):
                                       "cve"         : cve,
                                       "method"      : method}
         item = self.behavior.find_one({"url_id" : self.url_id})
-        if item != None:
+        if item is not None:
             self.behavior.update({"url_id" : self.url_id}, {"$push" : {"behavior" : _data}})
         else:
             self.behavior.insert({"url_id" : self.url_id, "behavior" : [_data]})
+
+    def set_profile(self, personality, plugins):
+        item = self.profiles.find_one({"url_id" : self.url_id})
+        if item is not None:
+            self.profiles.update(item, {"personality" : personality, "plugins" : plugins})
+        else:
+            self.profiles.insert({"url_id" : self.url_id, "personality" : personality, "plugins" : plugins})

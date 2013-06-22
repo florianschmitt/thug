@@ -57,6 +57,8 @@ class Navigator(PyV8.JSClass):
         self.__init_personality()
         self.filecount = 0
 
+        log.ThugLogging.MongoDB.set_profile(self.personality, self._plugins)
+
     def __init_personality(self):
         if log.ThugOpts.Personality.isIE():
             self.__init_personality_IE()
